@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Summarizer</title>
+    <style>
+        body {
+            font-family: Georgia, 'Times New Roman', serif;
+            margin: 0;
+            padding: 0;
+            background-color: #F4EFE6;
+            color: #2F2A24;
+        }
+        .container {
+            max-width: 640px;
+            margin: 60px auto;
+            padding: 32px 34px;
+            background: #FBF6EE;
+            border: 1px solid #D8C8B3;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(73, 57, 37, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #5A432F;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-size: 2.4rem;
+        }
+
+        h3 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 28px;
+            color: #7B6551;
+            font-weight: normal;
+            font-size: 1.05rem;
+        }
+
+        p {
+            line-height: 1.7;
+            color: #4A4036;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        textarea {
+            min-height: 180px;
+            padding: 16px;
+            border: 1px solid #C6B5A4;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: Georgia, serif;
+            background: #FDF6F1;
+            color: #342F29;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #8B5E3C;
+            color: #F9F1E7;
+            border: 1px solid #8B5E3C;
+            padding: 12px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.2s ease, transform 0.15s ease;
+            align-self: flex-start;
+        }
+
+        button:hover {
+            background-color: #7A4D31;
+            transform: translateY(-1px);
+        }
+
+        #summary-output {
+            margin-top: 28px;
+            background: #F9F2E8;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #D4C4B2;
+        }
+
+        #summary-heading {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            color: #624B3A;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text Summarizer</h1>
+        <h3>using HuggingFace Transformer</h3>
+        <p>Write or Paste your content below for quick summarization.</p>
+
+        <form id="summarization-form">
+            <textarea id="dialogue-input" placeholder="Enter your content here..." required></textarea>
+            <button type="submit">Summarize</button>
+        </form>
+
+        <div id="summary-output">
+            <h3 id="summary-heading">Content Summary</h3>
+            <p id="summary-text"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("summarization-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+        
+            const dialogueInput = document.getElementById("dialogue-input");
+            const summaryText = document.getElementById("summary-text");
+            const submitButton = e.target.querySelector("button");
+        
+            const dialogue = dialogueInput.value.trim();
+            if (!dialogue) return;
+        
+            summaryText.innerText = "Processing...";
+            submitButton.disabled = true;
+        
+            try {
+                const response = await fetch("/summarize/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ dialogue }),
+                });
+        
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+        
+                const data = await response.json();
+                summaryText.innerText = data.summary || "No summary returned.";
+            } catch (err) {
+                
+                summaryText.innerText = `Error: ${err.message}`;
+            } finally {
+                
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
